@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/CS3310_Project2.dir/main.cpp.o  -o CS3310_Project2 
