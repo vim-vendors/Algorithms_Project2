@@ -4,16 +4,74 @@
 
 
 //global variables
+class Item {
+private:
+    int profit;
+    int weight;
+    double ratio;
+public:
+    //constructor
+    Item();
+    Item(int profit, int weight);
+
+    //getter
+    int getProfit() {return this->profit;};
+    int getWeight() {return this->weight;};
+    double getRatio() {return this->ratio;};
+    //setter
+    int setProfit(int profit);
+    int setWeight(int weight);
+    int setRatio();
+};
+
+Item::Item(){
+    this->weight = 0;
+    this->profit = 0;
+    this->ratio = 0.0;
+}
+
+Item::Item(int profit, int weight){
+    this->weight = weight;
+    this->profit = profit;
+    this->ratio = (profit * 1.0) / (weight* 1.0) ;
+}
+
+int Item::setProfit(int profit){
+    this->profit = profit;
+    setRatio();
+}
+
+int Item::setWeight(int weight){
+    this->weight = weight;
+    setRatio();
+}
+
+int Item::setRatio(){
+    int temp_profit = getProfit();
+    int temp_weight = getWeight();
+    this->ratio = (temp_profit * 1.0) / (temp_weight* 1.0) ;
+}
 
 using namespace std;
 
 void mainMenu();
+
+//global variables
+int max_weight = 0;
+vector<Item> items;
 
 int getNumber();
 string getUserString();
 int getStringNumber(const string &st);
 bool validateStringInput(const string &st);
 bool falseStart(int &test);
+
+void displaySet(vector <Item> &list);
+
+//void knapsack(int index, int profit, int weight){
+//    if (weight <= )
+//}
+
 
 
 //possible deprecated methods
@@ -31,16 +89,27 @@ int main(int argc, char const *argv[])
 
 //main loop
 void mainMenu(){
-    cout << "How many items are there to potentially take? ";
-    int item_no = getNumber();
+//    cout << "How many items are there to potentially take? ";
+//    int item_no = getNumber();
+//
+//    //get weights in string convert to array
+//
+//    cout << "What is the max weight that the bag can hold? ";
+//    int max_weight = getNumber();
+//
+//    cout << "Max weight is " << max_weight << " the Number of items is " << item_no << "\n";
+    Item newItem(20, 6);
+    cout << "Weight: " << newItem.getWeight() << ", Profit: " <<
+    newItem.getProfit() << ", Ratio: " << newItem.getRatio() <<"\n";
 
-    //get weights in string convert to array
+    items.push_back(newItem);
+    newItem.setProfit(20);
+    newItem.setWeight(40);
+    cout << "Weight: " << newItem.getWeight() << ", Profit: " <<
+         newItem.getProfit() << ", Ratio: " << newItem.getRatio() <<"\n";
+    items.push_back(newItem);
 
-    cout << "What is the max weight that the bag can hold? ";
-    int max_weight = getNumber();
-
-    cout << "Max weight is " << max_weight << " the Number of items is " << item_no << "\n";
-
+    displaySet(items);
 
     //get profits in string convert to array
     //get max weight bag can hold as string and convert into integer
@@ -118,3 +187,13 @@ int getNumber(){
         return num;
 }
 
+void displaySet(vector <Item> &list){
+    auto _begin = list.begin();
+    auto _end = list.end();
+
+    for (auto it = _begin; it < _end; ++it) {
+        cout << "Weight: " << it->getWeight() << ", Profit: " <<
+               it->getProfit() << ", Ratio: " << it->getRatio() <<"\n";
+    }
+    cout << endl;
+}
