@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 using namespace std;
 
@@ -64,12 +65,11 @@ int Item::setRatio(){
 //-----global variables-----//
 int max_weight = 0;
 int max_profit = 0;
+int node_counter = 0;
+
 vector<Item> items;
 vector<Item> best_set;
 vector<Item> include;
-
-//-----Program Methods-----//
-void mainMenu();
 
 //-----getters-----//
 double _getRatio(const int &index, vector<Item> node);
@@ -129,64 +129,55 @@ int getItemNumber(const char &c);
 
 int main(int argc, char const *argv[])
 {
-	mainMenu();
-	return 0;
-}
-
-//-----Program Methods-----//
-//------------------------//
-
-
-//main loop
-void mainMenu(){
-/*
-    cout << "How many items are there to potentially take? ";
-    int item_no = getNumber();
-
-    //get weights in string convert to array
-
-    cout << "What is the max weight that the bag can hold? ";
-    int max_weight = getNumber();
-
-    cout << "Max weight is " << max_weight << " the Number of items is " << item_no << "\n";
-*/
-
-
-
-    //build function to push array into vector list
-    //cout << "Please input a set of profits for all " << item_no << " items : \n";
-
-    //cout << "Please input a set of profits for all 6 items : \n";
-    //body of function
-
-    //get strings,
-    //
-    int test_profits[5] = {0, 40, 30, 50, 10} ;
-    int test_weights[5] = {0, 2, 5, 10, 5} ;
-
-
-    //push strings into vector, push into profits or weights variables
+    int item_no = 0;
+    int max_weight = 0;
+    int dummy_input = 0;
     vector<int> profits;
     vector<int> weights;
+    //initialize vectors
+    profits.push_back(0);
+    weights.push_back(0);
 
-    for (int index=0; index < 5; index++){
-        cout << test_profits[index] << " ";
-        profits.push_back(test_profits[index]);
+    cout << "How many items are there to potentially take? ";
+    cin >> item_no;
+
+    cout << "What is the max weight that the bag can hold? ";
+    cin >>  max_weight;
+
+    cout << "Max weight is " << max_weight << " the Number of items is " << item_no << "\n";
+
+    cout << "Please input a set of profits for all " << item_no << " items : \n";
+    for (int index=0; index < item_no; index++){
+        cin >> dummy_input;
+        cout << "Profit " << index + 1 <<" is " << dummy_input << "\n";
+        profits.push_back(dummy_input);
     }
-    cout << "\n";
-    for (int index=0; index < 5; index++){
-        cout << test_weights[index] << " ";
-        weights.push_back(test_weights[index]);
+
+    cout << "Please input a set of matching weights for all " << item_no << " items : \n";
+    for (int index=0; index < item_no; index++){
+        cin >> dummy_input;
+        cout << "Weight " << index + 1 <<" is " << dummy_input << "\n";
+        weights.push_back(dummy_input);
     }
 
-    cout << "\n";
+    //Enter these values to test program
+    //int test_profits[5] = {0, 40, 30, 50, 10} ;
+    // int test_weights[5] = {0, 2, 5, 10, 5}
 
+    //push into vector of items
     pushItems(profits, weights, items);
     displaySet(items);
     ::max_weight = 16;
 
     knapsack(0, 0, 0);
-    cout << "Final max profit is $" << ::max_profit << "\n";
+    cout << "The final amount of profit is $" << ::max_profit << "\n";
+    cout << "The final set of items in the knapsack is : \n";
+    displaySet(best_set);
+    cout << node_counter << " nodes were visited in the state space tree using the backtrack algorithm.\n";
+    cout << "\n";
+
+
+    return 0;
 }
 
 //-----getters-----//
@@ -216,8 +207,9 @@ int getNumber(){
 }
 string getUserString(){
     string _choice;
-    //cout << "this is bullshit " << _choice << "\n";
-    getline(std::cin, _choice);
+
+    getline(cin >> ws, _choice);
+
     return _choice;
 }
 
@@ -311,44 +303,23 @@ void displaySet(vector <Item> &list){
 //------------------//
 
 void knapsack(int index, int profit, int weight){
-/*    cout << "Knapsack call\n";
-    cout << "Max profit is " << ::max_profit << ", profit is "<< profit << "\n";
-    cout << "Max weight is " << ::max_weight << ", weight is "<< weight << "\n";*/
-
+    ::node_counter++;
     if ((weight <= ::max_weight) && (profit > ::max_profit)){
-//        cout << "IF #1 call\n";
         ::max_profit = profit;
         //numBest = i;
         //copy include into best_set
         set_best();
     }
     if (promising(index, profit, weight)){
-//        cout << "Node " << index << " from items set is promising\n";
-
         unsigned int temp = index;
         //push index + 1 node to includes
         include.push_back(items.at(temp + 1));
-
-//        cout << "IF #2 include push call\n";
-//        displaySet(include);
-
         //recursive call to knapsack
         knapsack(index + 1, profit + items.at(temp + 1).getProfit(), weight + items.at(temp + 1).getWeight());
-
-//        cout << "Recursive drop 1 \n";
-
         //pop index + 1 node from includes
         include.pop_back();
-
-/*        cout << "IF #2 include pop call\n";
-        displaySet(include);
-        cout << "Index + 1 is " << index + 1 << " \n";*/
-
         //recursive call to knapsack
         knapsack(index + 1, profit, weight);
-
-//        cout << "Recursive drop 2 \n";
-
     }
 }
 
@@ -357,10 +328,6 @@ void knapsack(int index, int profit, int weight){
 bool promising(int index, int profit, int weight){
     int j_index, k_index, total_weight;
     double bound;
-
-/*    cout << "Promising call\n";
-    cout << "Max profit is " << ::max_profit << ", profit is "<< profit << "\n";
-    cout << "Max weight is " << ::max_weight << ", weight is "<< weight << "\n";*/
 
     if (weight >= ::max_weight)
         return false;
@@ -377,12 +344,8 @@ bool promising(int index, int profit, int weight){
          }
         k_index = j_index;
 
-//        cout << "K index is " << k_index << ", size is "<< items.size() << "\n";
-
         if (k_index < items.size())
             bound += ((::max_weight - total_weight) *  items.at(temp).getRatio());
-
-//        cout << "Bound is " << bound << ", total weight is "<< total_weight << "\n";
 
         return (bound > ::max_profit);
     }
@@ -390,17 +353,12 @@ bool promising(int index, int profit, int weight){
 
 
 void set_best(){
-
-
     //clear best
     best_set.clear();
     //copy everything into best from includes
     for (unsigned index=0; index < include.size(); index++){
         best_set.push_back(include.at(index));
     }
-
-/*    cout << "Best set post-op call\n";
-    displaySet(best_set);*/
 }
 
 //-----END BACKTRACKING ALGORITHM-----//
