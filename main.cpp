@@ -15,10 +15,11 @@ public:
     Item();
     Item(int profit, int weight);
 
-    //getter
+    //getter (declared here)
     int getProfit() {return this->profit;};
     int getWeight() {return this->weight;};
     double getRatio() {return this->ratio;};
+
     //setter
     int setProfit(int profit);
     int setWeight(int weight);
@@ -34,39 +35,62 @@ Item::Item(){
 Item::Item(int profit, int weight){
     this->weight = weight;
     this->profit = profit;
-    this->ratio = (profit * 1.0) / (weight* 1.0) ;
+    setRatio();
 }
+
 
 int Item::setProfit(int profit){
     this->profit = profit;
-    setRatio();
 }
 
 int Item::setWeight(int weight){
     this->weight = weight;
-    setRatio();
 }
 
+//sets ratio, in case of division of/by zero replaces nan with zero
 int Item::setRatio(){
     int temp_profit = getProfit();
     int temp_weight = getWeight();
-    this->ratio = (temp_profit * 1.0) / (temp_weight* 1.0) ;
+    if (temp_profit == 0 || temp_weight == 0)
+        this->ratio = 0;
+    else
+        this->ratio = (temp_profit * 1.0) / (temp_weight* 1.0) ;
 }
+
+
 //-----END CLASS METHODS-----//
 
 
 //-----global variables-----//
 int max_weight = 0;
 vector<Item> items;
+vector<Item> best_set;
+vector<Item> include;
 
 //-----Program Methods-----//
 void mainMenu();
 
 //-----getters-----//
+double _getRatio(const int &index, vector<Item> node);
+
+int _getProfit(const int &index, vector<Item> node);
+
+int _getWeight(const int &index, vector<Item> node);
+
+
+//-----setters-----//
+
 int getNumber();
 string getUserString();
 
-//-----setters-----//
+
+//push to items vector set
+void pushItems(const vector<int> &profits, const vector<int> &weights, vector<Item> &node);
+
+//pop item from items vector
+void popItems(const int &index, vector<Item> &node);
+
+//need method to copy include vector to best_set vector for knapsack algorithm to work
 
 //-----conversion-----//
 int getStringNumber(const string &st);
@@ -80,6 +104,9 @@ bool validateInput(const char &c);
 void displaySet(vector <Item> &list);
 
 //-----test code-----//
+
+
+
 
 //BACKTRACKING ALGORITHM-----//
 
@@ -105,6 +132,8 @@ int main(int argc, char const *argv[])
 
 //-----Program Methods-----//
 //------------------------//
+
+
 //main loop
 void mainMenu(){
 /*    cout << "How many items are there to potentially take? ";
@@ -126,13 +155,29 @@ void mainMenu(){
     //    TEST CODE
     cout << "Please input a set of profits for all 6 items : \n";
     //body of function
-    //get strings, push values into existing vector <int>
-    int test[6] = {1,2, 3, 4, 5, 6} ;
 
-    for (int index=0; index < 6; index++){
-        cout << test[index] << " ";
+    //get strings,
+    //
+    int test_profits[5] = {0, 40, 30, 50, 10} ;
+    int test_weights[5] = {0, 2, 5, 10, 5} ;
+
+
+    //push strings into vector, push into profits or weights variables
+    vector<int> profits;
+    vector<int> weights;
+
+    for (int index=0; index < 5; index++){
+        cout << test_profits[index] << " ";
+        profits.push_back(test_profits[index]);
     }
     cout << "\n";
+    for (int index=0; index < 5; index++){
+        cout << test_weights[index] << " ";
+        weights.push_back(test_weights[index]);
+    }
+
+    cout << "\n";
+
 
     //    END TEST CODE
 
@@ -162,6 +207,20 @@ void mainMenu(){
 
 //-----getters-----//
 //----------------//
+double _getRatio(const int &index, vector<Item> node){
+    unsigned long temp = index;
+    return node.at(temp).getRatio();
+}
+
+int _getProfit(const int &index, vector<Item> node){
+    unsigned long temp = index;
+    return node.at(temp).getProfit();
+}
+
+int _getWeight(const int &index, vector<Item> node){
+    unsigned long temp = index;
+    return node.at(temp).getWeight();
+}
 
 int getNumber(){
     string num_items = getUserString();
@@ -180,6 +239,24 @@ string getUserString(){
 
 //-----setters-----//
 //----------------//
+
+//pushes nodes into items vector
+void pushItems(const vector<int> &profits, const vector<int> &weights, vector<Item> &node){
+    int size = profits.size();
+    for (unsigned index=0; index < size; index++){
+        int temp_profit = profits.at(index);
+        int temp_weight = weights.at(index);
+        Item temp(temp_profit, temp_weight);
+        node.push_back(temp);
+    }
+}
+
+//pop
+void popItems(const int &index, vector<Item> &node){
+    int size = node.size();
+    if (size != 0)
+        node.erase (node.begin()+index);
+}
 
 
 //-----conversion-----//
