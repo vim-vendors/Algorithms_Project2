@@ -63,6 +63,7 @@ int Item::setRatio(){
 
 //-----global variables-----//
 int max_weight = 0;
+int max_profit = 0;
 vector<Item> items;
 vector<Item> best_set;
 vector<Item> include;
@@ -110,9 +111,11 @@ void displaySet(vector <Item> &list);
 
 //BACKTRACKING ALGORITHM-----//
 
-//void knapsack(int index, int profit, int weight);
+void knapsack(int index, int profit, int weight);
 
-//bool promising();
+bool promising(int index, int profit, int weight);
+
+void set_best();
 
 //-----END BACKTRACKING ALGORITHM-----//
 
@@ -326,13 +329,61 @@ void displaySet(vector <Item> &list){
 //-----test code-----//
 //------------------//
 
+void knapsack(int index, int profit, int weight){
+    if ((weight <= max_weight) && (profit > max_profit)){
+        max_profit = profit;
+        //numBest = i;
+        //copy include into best_set
+        set_best();
+    }
+    if (promising(index, profit, weight)){
+        //push index + 1 node to includes
+        unsigned int temp = index;
+        knapsack(index + 1, profit + items.at(temp + 1).getProfit(), weight + items.at(temp + 1).getWeight());
+        //pop index + 1 node from includes
+        knapsack(index + 1, profit, weight);
+    }
+}
+
 //BACKTRACKING ALGORITHM-----//
 
-    /*void knapsack(int index, int profit, int weight){
-        if (weight <= )
-    }*/
+bool promising(int index, int profit, int weight){
+        int j_index, k_index, total_weight;
+        double bound;
 
-//bool promising(){}
+
+        if (weight >= max_weight)
+            return false;
+        else{
+            j_index = index + 1;
+            unsigned int temp = j_index;
+            bound = profit;
+            total_weight = weight;
+            while ((j_index <= items.size()) && (total_weight + items.at(temp).getWeight() <= max_weight)){
+                total_weight += items.at(temp).getWeight();
+                bound += items.at(temp).getProfit();
+                temp++;
+                j_index++;
+            }
+            k_index = j_index;
+
+            if (k_index <=items.size())
+                bound += ((max_weight - total_weight) *  items.at(temp).getRatio());
+
+            return (bound > max_profit);
+        }
+ }
+
+
+void set_best(){
+    //clear best
+    best_set.clear();
+    //copy everything into best from includes
+    for (unsigned index=0; index < include.size(); index++){
+        best_set.push_back(include.at(index));
+    }
+}
+
 //-----END BACKTRACKING ALGORITHM-----//
 
 
