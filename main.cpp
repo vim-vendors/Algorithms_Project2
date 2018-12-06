@@ -117,6 +117,7 @@ bool promising(int index, int profit, int weight);
 
 void set_best();
 
+bool compareRatio(Item i1, Item i2);
 //-----END BACKTRACKING ALGORITHM-----//
 
 
@@ -134,9 +135,7 @@ int main(int argc, char const *argv[])
     int dummy_input = 0;
     vector<int> profits;
     vector<int> weights;
-    //initialize vectors
-    profits.push_back(0);
-    weights.push_back(0);
+
 
     cout << "How many items are there to potentially take? ";
     cin >> item_no;
@@ -164,8 +163,14 @@ int main(int argc, char const *argv[])
     //int test_profits[5] = {0, 40, 30, 50, 10} ;
     // int test_weights[5] = {0, 2, 5, 10, 5}
 
+
     //push into vector of items
     pushItems(profits, weights, items);
+    //sort be non-increasing ratio
+    sort(items.begin(), items.end(), compareRatio);
+    //needed to insert dummy node into items vector
+    Item temp(0, 0);
+    items.insert(items.begin(), temp);
     displaySet(items);
     ::max_weight = 16;
 
@@ -176,6 +181,13 @@ int main(int argc, char const *argv[])
     cout << node_counter << " nodes were visited in the state space tree using the backtrack algorithm.\n";
     cout << "\n";
 
+
+/*
+    cout << "Intervals sorted by ratio : \n";
+    for (auto x : best_set)
+        cout << "[" << x.getRatio() << ", " << x.getRatio() << "] ";
+
+    displaySet(best_set);*/
 
     return 0;
 }
@@ -362,7 +374,11 @@ void set_best(){
 }
 
 //-----END BACKTRACKING ALGORITHM-----//
-
+//sort vectors by nonincreasing ratio
+bool compareRatio(Item a, Item b)
+{
+    return (a.getRatio() > b.getRatio());
+}
 
 
 //-----deprecated code-----//
