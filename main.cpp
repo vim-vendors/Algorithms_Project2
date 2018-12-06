@@ -139,7 +139,8 @@ int main(int argc, char const *argv[])
 
 //main loop
 void mainMenu(){
-/*    cout << "How many items are there to potentially take? ";
+/*
+    cout << "How many items are there to potentially take? ";
     int item_no = getNumber();
 
     //get weights in string convert to array
@@ -148,15 +149,14 @@ void mainMenu(){
     int max_weight = getNumber();
 
     cout << "Max weight is " << max_weight << " the Number of items is " << item_no << "\n";
+*/
 
 
 
     //build function to push array into vector list
-    cout << "Please input a set of profits for all " << item_no << " items : ";*/
+    //cout << "Please input a set of profits for all " << item_no << " items : \n";
 
-
-    //    TEST CODE
-    cout << "Please input a set of profits for all 6 items : \n";
+    //cout << "Please input a set of profits for all 6 items : \n";
     //body of function
 
     //get strings,
@@ -181,7 +181,12 @@ void mainMenu(){
 
     cout << "\n";
 
+    pushItems(profits, weights, items);
+    displaySet(items);
+    ::max_weight = 16;
 
+    knapsack(0, 0, 0);
+    cout << "Final max profit is $" << ::max_profit << "\n";
     //    END TEST CODE
 
     //build function sort vector by some criteria
@@ -190,19 +195,6 @@ void mainMenu(){
     //build promise
 
 
-
-/*    Item newItem(20, 6);
-    cout << "Weight: " << newItem.getWeight() << ", Profit: " <<
-    newItem.getProfit() << ", Ratio: " << newItem.getRatio() <<"\n";
-
-    items.push_back(newItem);
-    newItem.setProfit(20);
-    newItem.setWeight(40);
-    cout << "Weight: " << newItem.getWeight() << ", Profit: " <<
-         newItem.getProfit() << ", Ratio: " << newItem.getRatio() <<"\n";
-    items.push_back(newItem);
-
-    displaySet(items);*/
 
     //get profits in string convert to array
     //get max weight bag can hold as string and convert into integer
@@ -330,58 +322,98 @@ void displaySet(vector <Item> &list){
 //------------------//
 
 void knapsack(int index, int profit, int weight){
-    if ((weight <= max_weight) && (profit > max_profit)){
-        max_profit = profit;
+    cout << "Knapsack call\n";
+    cout << "Max profit is " << ::max_profit << ", profit is "<< profit << "\n";
+    cout << "Max weight is " << ::max_weight << ", weight is "<< weight << "\n";
+
+
+
+    if ((weight <= ::max_weight) && (profit > ::max_profit)){
+        cout << "IF #1 call\n";
+        ::max_profit = profit;
         //numBest = i;
         //copy include into best_set
         set_best();
     }
     if (promising(index, profit, weight)){
-        //push index + 1 node to includes
+        cout << "Node " << index << " from items set is promising\n";
+
         unsigned int temp = index;
+        //push index + 1 node to includes
+        include.push_back(items.at(temp + 1));
+
+        cout << "IF #2 include push call\n";
+        displaySet(include);
+
+        //recursive call to knapsack
         knapsack(index + 1, profit + items.at(temp + 1).getProfit(), weight + items.at(temp + 1).getWeight());
+
+        cout << "Recursive drop 1 \n";
+
         //pop index + 1 node from includes
+        include.pop_back();
+
+        cout << "IF #2 include pop call\n";
+        displaySet(include);
+        cout << "Index + 1 is " << index + 1 << " \n";
+
+        //recursive call to knapsack
         knapsack(index + 1, profit, weight);
+
+        cout << "Recursive drop 2 \n";
+
     }
 }
 
 //BACKTRACKING ALGORITHM-----//
 
 bool promising(int index, int profit, int weight){
-        int j_index, k_index, total_weight;
-        double bound;
+    int j_index, k_index, total_weight;
+    double bound;
 
+    cout << "Promising call\n";
+    cout << "Max profit is " << ::max_profit << ", profit is "<< profit << "\n";
+    cout << "Max weight is " << ::max_weight << ", weight is "<< weight << "\n";
 
-        if (weight >= max_weight)
-            return false;
-        else{
-            j_index = index + 1;
-            unsigned int temp = j_index;
-            bound = profit;
-            total_weight = weight;
-            while ((j_index <= items.size()) && (total_weight + items.at(temp).getWeight() <= max_weight)){
-                total_weight += items.at(temp).getWeight();
-                bound += items.at(temp).getProfit();
-                temp++;
-                j_index++;
-            }
-            k_index = j_index;
+    if (weight >= ::max_weight)
+        return false;
+    else{
+         j_index = index + 1;
+         unsigned int temp = j_index;
+         bound = profit;
+         total_weight = weight;
+         while ((j_index < items.size()) && (total_weight + items.at(temp).getWeight() <= ::max_weight)){
+              total_weight += items.at(temp).getWeight();
+              bound += items.at(temp).getProfit();
+              temp++;
+              j_index++;
+         }
+        k_index = j_index;
 
-            if (k_index <=items.size())
-                bound += ((max_weight - total_weight) *  items.at(temp).getRatio());
+        cout << "K index is " << k_index << ", size is "<< items.size() << "\n";
 
-            return (bound > max_profit);
-        }
+        if (k_index < items.size())
+            bound += ((::max_weight - total_weight) *  items.at(temp).getRatio());
+
+        cout << "Bound is " << bound << ", total weight is "<< total_weight << "\n";
+
+        return (bound > ::max_profit);
+    }
  }
 
 
 void set_best(){
+
+
     //clear best
     best_set.clear();
     //copy everything into best from includes
     for (unsigned index=0; index < include.size(); index++){
         best_set.push_back(include.at(index));
     }
+
+    cout << "Best set post-op call\n";
+    displaySet(best_set);
 }
 
 //-----END BACKTRACKING ALGORITHM-----//
