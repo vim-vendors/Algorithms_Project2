@@ -63,6 +63,7 @@ int Item::setRatio(){
 
 
 //-----global variables-----//
+int item_no = 0;
 int max_weight = 0;
 int max_profit = 0;
 int node_counter = 0;
@@ -80,33 +81,17 @@ int _getWeight(const int &index, vector<Item> node);
 
 
 //-----setters-----//
-
-int getNumber();
-string getUserString();
-
-
 //push to items vector set
 void pushItems(const vector<int> &profits, const vector<int> &weights, vector<Item> &node);
 
 //pop item from items vector
 void popItems(const int &index, vector<Item> &node);
 
-//need method to copy include vector to best_set vector for knapsack algorithm to work
-
-//-----conversion-----//
-int getStringNumber(const string &st);
-
-//-----boolean-----//
-bool validateStringInput(const string &st);
-bool falseStart(int &test);
-bool validateInput(const char &c);
-
 //-----output-----//
 void displaySet(vector <Item> &list);
 
-//-----test code-----//
-
-
+//sort item vector by ratio
+bool compareRatio(Item i1, Item i2);
 
 
 //BACKTRACKING ALGORITHM-----//
@@ -116,46 +101,36 @@ void knapsack(int index, int profit, int weight);
 bool promising(int index, int profit, int weight);
 
 void set_best();
-
-bool compareRatio(Item i1, Item i2);
 //-----END BACKTRACKING ALGORITHM-----//
 
-
-
-//-----deprecated code-----//
-char getUserChar();
-int getItemNumber(const char &c);
-
-
-
-int main(int argc, char const *argv[])
+int main()
 {
-    int item_no = 0;
-    int max_weight = 0;
     int dummy_input = 0;
     vector<int> profits;
     vector<int> weights;
 
 
     cout << "How many items are there to potentially take? ";
-    cin >> item_no;
+    cin >> ::item_no;
 
     cout << "What is the max weight that the bag can hold? ";
-    cin >>  max_weight;
+    cin >>  ::max_weight;
 
-    cout << "Max weight is " << max_weight << " the Number of items is " << item_no << "\n";
+    cout << "Max weight is " << ::max_weight << " the Number of items is " << ::item_no << "\n";
 
-    cout << "Please input a set of profits for all " << item_no << " items : \n";
+    cout << "Please input a set of profits for all " << ::item_no << " items : \n";
     for (int index=0; index < item_no; index++){
+        cout << "Profit " << index + 1 << ": ";
         cin >> dummy_input;
-        cout << "Profit " << index + 1 <<" is " << dummy_input << "\n";
+        //cout << "Profit " << index + 1 <<" is " << dummy_input << "\n";
         profits.push_back(dummy_input);
     }
 
-    cout << "Please input a set of matching weights for all " << item_no << " items : \n";
+    cout << "Please input a set of matching weights for all " << ::item_no << " items : \n";
     for (int index=0; index < item_no; index++){
+        cout << "Weight " << index + 1 << ": ";
         cin >> dummy_input;
-        cout << "Weight " << index + 1 <<" is " << dummy_input << "\n";
+        //cout << "Weight " << index + 1 <<" is " << dummy_input << "\n";
         weights.push_back(dummy_input);
     }
 
@@ -166,28 +141,20 @@ int main(int argc, char const *argv[])
 
     //push into vector of items
     pushItems(profits, weights, items);
-    //sort be non-increasing ratio
+    //sort nodes by non-increasing ratio
     sort(items.begin(), items.end(), compareRatio);
-    //needed to insert dummy node into items vector
-    Item temp(0, 0);
-    items.insert(items.begin(), temp);
+    //needed to insert dummy node into sorted items vector
+    Item dummy_node(0, 0);
+    items.insert(items.begin(), dummy_node);
+    cout << "Your set of items is :\n";
     displaySet(items);
-    ::max_weight = 16;
-
+    //call the knapsack method
     knapsack(0, 0, 0);
     cout << "The final amount of profit is $" << ::max_profit << "\n";
     cout << "The final set of items in the knapsack is : \n";
     displaySet(best_set);
     cout << node_counter << " nodes were visited in the state space tree using the backtrack algorithm.\n";
     cout << "\n";
-
-
-/*
-    cout << "Intervals sorted by ratio : \n";
-    for (auto x : best_set)
-        cout << "[" << x.getRatio() << ", " << x.getRatio() << "] ";
-
-    displaySet(best_set);*/
 
     return 0;
 }
@@ -207,22 +174,6 @@ int _getProfit(const int &index, vector<Item> node){
 int _getWeight(const int &index, vector<Item> node){
     unsigned long temp = index;
     return node.at(temp).getWeight();
-}
-
-int getNumber(){
-    string num_items = getUserString();
-    int num = (validateStringInput(num_items)) ? (getStringNumber(num_items)) : (-1);
-    if (falseStart(num))//check if input is valid
-        return -1;
-    else
-        return num;
-}
-string getUserString(){
-    string _choice;
-
-    getline(cin >> ws, _choice);
-
-    return _choice;
 }
 
 //-----setters-----//
@@ -246,58 +197,7 @@ void popItems(const int &index, vector<Item> &node){
         node.erase (node.begin()+index);
 }
 
-
-//-----conversion-----//
-//-------------------//
-
-//converts string into number
-int getStringNumber(const string &st){
-    try {
-        //string temp = st;
-        return  std::stoi (st);
-    }
-    catch (int e)
-    {
-        return -1;
-    }
-}
-
-
-//-----boolean-----//
-//----------------//
-
-//if not numeric return  false
-bool validateInput(const char &c){
-    if (!isdigit(c))
-        return false;
-    else
-        return true;
-}
-
-bool validateStringInput(const string &st){
-
-    if (st == "")
-        return false;
-
-    for (int i=0;i<st.size();i++)
-        if (!isdigit(st[i]))
-            return false;
-    return true;
-}
-
-//refactored boilerplate
-bool  falseStart(int &test){
-    if (test == -1){
-        cout << "You have incorrectly entered a variable.\n";
-        return true;
-    }
-    else
-        return false;
-}
-
-
 //-----output-----//
-//----------------//
 
 void displaySet(vector <Item> &list){
     auto _begin = list.begin();
@@ -310,15 +210,17 @@ void displaySet(vector <Item> &list){
     cout << endl;
 }
 
+//sort vectors by nonincreasing ratio
+bool compareRatio(Item a, Item b)
+{
+    return (a.getRatio() > b.getRatio());
+}
 
-//-----test code-----//
-//------------------//
-
+//BACKTRACKING ALGORITHM-----//
 void knapsack(int index, int profit, int weight){
     ::node_counter++;
     if ((weight <= ::max_weight) && (profit > ::max_profit)){
         ::max_profit = profit;
-        //numBest = i;
         //copy include into best_set
         set_best();
     }
@@ -335,8 +237,7 @@ void knapsack(int index, int profit, int weight){
     }
 }
 
-//BACKTRACKING ALGORITHM-----//
-
+//don't use promising with brute-force...
 bool promising(int index, int profit, int weight){
     int j_index, k_index, total_weight;
     double bound;
@@ -374,28 +275,9 @@ void set_best(){
 }
 
 //-----END BACKTRACKING ALGORITHM-----//
-//sort vectors by nonincreasing ratio
-bool compareRatio(Item a, Item b)
-{
-    return (a.getRatio() > b.getRatio());
-}
 
 
-//-----deprecated code-----//
-//------------------------//
 
-//generic prompt, passes character to other functions
-char getUserChar(){
-    char choice;
-    std::cin >> choice;
-    choice = toupper(choice);
-    return choice;
-}
-
-//gets char value returns
-int getItemNumber(const char &c){
-    return c - '0';
-}
 
 
 
