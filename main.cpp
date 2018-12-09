@@ -89,7 +89,8 @@ int branch_counter = 0;
 
 vector<Item> items;
 vector<Item> branch_items;
-//vector<Item> brute_items;
+vector<Item> visited_branch;
+vector<Item> brute_items;
 
 vector<Item> priority_queue;
 vector<Item> best_set;
@@ -113,12 +114,18 @@ void popItems(const int &index, vector<Item> &node);
 
 //-----output-----//
 void displaySet(vector <Item> &list);
+void displayBranch(vector <Item> &list);
 
 //sort item vector by ratio
 bool compareRatio(Item i1, Item i2);
 
 //for use with priority queue in branch and bound
 bool compareBound(Item a, Item b);
+
+//for use with displaying branch and bound
+bool compareProfit(Item a, Item b);
+
+void erase_duplicates(vector <Item> &list);
 
 //BACKTRACKING ALGORITHM-----//
 
@@ -136,93 +143,109 @@ void knapsack3 ();
 double bound (Item node_u);
 
 //end branch and bound
+void algo_two(const vector<int> &profits, const vector<int> &weights);
+void algo_three(const vector<int> &profits, const vector<int> &weights);
 
 //test code
 void my_pause();
-
+void main_menu();
 
 int main()
 {
-    int dummy_input = 0;
+    main_menu();
+    return 0;
+}
+
+void main_menu(){
+    int p,w = 0;
     vector<int> profits;
     vector<int> weights;
 
 
-//    cout << "How many items are there to potentially take? ";
-//    cin >> ::item_no;
-//
-//    cout << "What is the max weight that the bag can hold? ";
-//    cin >>  ::max_weight;
-//
-//    cout << "Max weight is " << ::max_weight << " the Number of items is " << ::item_no << "\n";
-//
-//    cout << "Please input a set of profits for all " << ::item_no << " items : \n";
-//    for (int index=0; index < item_no; index++){
-//        cout << "Profit " << index + 1 << ": ";
-//        cin >> dummy_input;
-//        //cout << "Profit " << index + 1 <<" is " << dummy_input << "\n";
-//        profits.push_back(dummy_input);
-//    }
-//
-//    cout << "Please input a set of matching weights for all " << ::item_no << " items : \n";
-//    for (int index=0; index < item_no; index++){
-//        cout << "Weight " << index + 1 << ": ";
-//        cin >> dummy_input;
-//        //cout << "Weight " << index + 1 <<" is " << dummy_input << "\n";
-//        weights.push_back(dummy_input);
-//    }
+    cout << "How many items are there to potentially take? ";
+    cin >> ::item_no;
 
-    ::max_weight = 16;
-    ::item_no = 4;
+    cout << "What is the max weight that the bag can hold? ";
+    cin >>  ::max_weight;
 
-    //Enter these values to test program
-    int test_profits[5] = {40, 30, 50, 10} ;
-    int test_weights[5] = {2, 5, 10, 5};
+    cout << "Max weight is " << ::max_weight << " the Number of items is " << ::item_no << "\n";
 
-    for (int index=0; index < 4; index++){
-        profits.push_back(test_profits[index]);
-        weights.push_back(test_weights[index]);
+    cout << "Please input a set of profits and matching weights for all " << ::item_no << " items : \n";
+    for (int index=0; index < item_no; index++){
+        cout << "Profit " << index + 1 << ": ";
+        cin >> p;
+        cout << "Weight " << index + 1 << ": ";
+        cin >> w;
+        profits.push_back(p);
+        weights.push_back(w);
     }
 
-    //test for algorithm 1
-    /*
+    cout << "Please choose an algorithm:\n";
+    cout << "1) Brute Force Algorithm\n";
+    cout << "2) Backtracking Algorithm\n";
+    cout << "3) Branch and Bound Algorithm\n";
+    cout << "4) Exit\n";
+    char choice;
+    cin >> choice;
+    switch(choice)
+    {
+        case '1': cout << "Working on it\n";
+            break;
+        case '2': algo_two(profits, weights);
+            break;
+        case '3': algo_three(profits, weights);
+            break;
+        case '4': cout << "Goodbye.\n";
+            break;
+        default:
+            cout << "Incorrect choice.\n";
+            main_menu();
+    }
+}
+
+void algo_two(const vector<int> &profits, const vector<int> &weights){
     //push into vector of items
-    pushItems(profits, weights, items);
+    pushItems(profits, weights, ::items);
     //sort nodes by non-increasing ratio
-    sort(items.begin(), items.end(), compareRatio);
+    sort(::items.begin(), ::items.end(), compareRatio);
     //needed to insert dummy node into sorted items vector
     Item dummy_node(0, 0);
-    items.insert(items.begin(), dummy_node);
+    ::items.insert(::items.begin(), dummy_node);
     cout << "Your set of items is :\n";
-    displaySet(items);
+    displaySet(::items);
     //call the knapsack method
     knapsack(0, 0, 0);
     cout << "The final amount of profit is $" << ::max_profit << "\n";
     cout << "The final set of items in the knapsack is : \n";
-    displaySet(best_set);
-    cout << node_counter << " nodes were visited in the state space tree using the backtrack algorithm.\n";
+    displaySet(::best_set);
+    cout << ::node_counter << " nodes were visited in the state space tree using the backtrack algorithm.\n";
     cout << "\n";
-     */
+}
+
+void algo_three(const vector<int> &profits, const vector<int> &weights){
     //push into vector of items
-    pushItems(profits, weights, branch_items);
+    pushItems(profits, weights, ::branch_items);
     //sort nodes by non-increasing ratio
-    sort(branch_items.begin(), branch_items.end(), compareRatio);
+    sort(::branch_items.begin(), ::branch_items.end(), compareRatio);
     //needed to insert dummy node into sorted items vector
     Item dummy_node(0, 0);
-    branch_items.insert(branch_items.begin(), dummy_node);
+    ::branch_items.insert(::branch_items.begin(), dummy_node);
     cout << "Your set of items is :\n";
-    displaySet(branch_items);
+    displaySet(::branch_items);
     //call the knapsack method
     knapsack3();
     cout << "The final amount of profit is $" << ::max_profit << "\n";
 
     cout << "The final set of items in the knapsack is : \n";
-    displaySet(priority_queue);
-    cout << branch_counter << " nodes were visited in the state space tree using the backtrack algorithm.\n";
-    cout << "\n";
+    //clean data
+    sort(::visited_branch.begin(), ::visited_branch.end(), compareProfit);
+    erase_duplicates(::visited_branch);
 
-    return 0;
+    displayBranch(::visited_branch);
+    cout << ::branch_counter << " nodes were visited in the state space tree using the branch and bound algorithm.\n";
+    cout << "\n";
 }
+
 
 //-----getters-----//
 //----------------//
@@ -274,21 +297,54 @@ void displaySet(vector <Item> &list){
 
     for (auto it = _begin; it < _end; ++it) {
         cout << "Weight: " << it->getWeight() << ", Profit: " <<
-             it->getProfit() << ", Ratio: " << it->getRatio() << ", Bound: " << it->getBound() << ", Level: " << it->getLevel() << "\n";
+             it->getProfit() << ", Ratio: " << it->getRatio() << /*", Bound: " << it->getBound() << ", Level: " << it->getLevel() << */"\n";
+    }
+    cout << endl;
+}
+
+void displayBranch(vector <Item> &list){
+    auto index = list.begin();
+
+    int temp_profit = ::max_profit;
+
+    while (temp_profit > 0){
+        cout << "Weight: " << index->getWeight() << ", Profit: " <<
+             index->getProfit() << ", Ratio: " << index->getRatio()
+             << /*", Bound: " << index->getBound() << ", Level: " << index->getLevel() <<*/ "\n";
+        temp_profit -= index->getProfit();
+        index++;
     }
     cout << endl;
 }
 
 //sort vectors by nonincreasing ratio
-bool compareRatio(Item a, Item b)
-{
+bool compareRatio(Item a, Item b){
     return (a.getRatio() > b.getRatio());
 }
 
-bool compareBound(Item a, Item b)
-{
+bool compareBound(Item a, Item b){
     return (a.getBound() > b.getBound());
 }
+
+//for use with displaying branch and bound
+bool compareProfit(Item a, Item b){
+    return (a.getProfit() > b.getProfit());
+}
+
+void erase_duplicates(vector <Item> &list){
+    auto begin = list.begin();
+
+    auto end = list.end();
+
+    for (auto it = begin, next = it + 1; it < end; ++it) {
+        if (it->getProfit() == next->getProfit() && it->getWeight() == next->getWeight()){
+            list.erase(next);
+        }
+        next++;
+    }
+
+}
+
 
 //BACKTRACKING ALGORITHM-----//
 void knapsack(int index, int profit, int weight){
@@ -353,7 +409,6 @@ void set_best(){
 //----------BRANCH AND BOUND METHOD-------------//
 
 void knapsack3 (){
-
     //    node u, v;
     Item node_u(0,0);
     Item node_v(0,0); //v.level = 0; v.profit = 0; v.weight = 0; // init v to be the root
@@ -364,85 +419,72 @@ void knapsack3 (){
     priority_queue.insert(priority_queue.begin(), node_v);
     sort(priority_queue.begin(), priority_queue.end(), compareBound);
     while (priority_queue.size() != 0){
-        cout << "Displaying queue\n";
-        displaySet(priority_queue);
-        priority_queue.erase (priority_queue.begin()); //remove (PQ, v); // remove unexpanded node with best bound
-        cout << "Displaying queue post-erasure\n";
-        displaySet(priority_queue);
-        if (node_v.getBound() > ::max_profit){
-            node_u.setLevel(node_v.getLevel() + 1);
 
-            node_u.setWeight(node_v.getWeight() + branch_items.at(node_u.getLevel()).getWeight());
-            node_u.setProfit(node_v.getProfit() + branch_items.at(node_u.getLevel()).getProfit());
+        //at some point refactor this into an overloaded assignment operator function
+        int temp_profit, temp_weight, temp_level;
+        double temp_bound;
+        temp_profit = priority_queue.at(0).getProfit();
+        temp_weight = priority_queue.at(0).getWeight();
+        temp_level = priority_queue.at(0).getLevel();
+        temp_bound = priority_queue.at(0).getBound();
+
+        Item temp_node;
+        temp_node.setProfit(temp_profit);
+        temp_node.setWeight(temp_weight);
+        temp_node.setLevel(temp_level);
+        temp_node.setRatio();
+        temp_node.setBound(temp_bound);
+        priority_queue.erase (priority_queue.begin()); //remove (PQ, v); // remove unexpanded node with best bound
+
+        if (temp_node.getBound() > ::max_profit){// see if node is still promising
+            node_u.setLevel(temp_node.getLevel() + 1);
+            Item temp_branch(branch_items.at(node_u.getLevel()).getProfit(), branch_items.at(node_u.getLevel()).getWeight());
+            visited_branch.push_back(temp_branch);
+            node_u.setWeight(temp_node.getWeight() + branch_items.at(node_u.getLevel()).getWeight());
+            node_u.setProfit(temp_node.getProfit() + branch_items.at(node_u.getLevel()).getProfit());
             node_u.setRatio();//testing
             node_u.setBound(bound(node_u));
             if (node_u.getWeight() <= ::max_weight && node_u.getProfit() > ::max_profit){
                 ::max_profit = node_u.getProfit();
-
-                cout << "From knapsack while IF#2: Max profit is  " << ::max_profit <<"\n";
-
             }
             if (node_u.getBound() > ::max_profit){
                 priority_queue.insert(priority_queue.begin(), node_u);
                 sort(priority_queue.begin(), priority_queue.end(), compareBound); //sort priority queue
-                cout << "From knapsack while IF#3: display queue\n";
-                displaySet(priority_queue);
             }
-            node_u.setWeight(node_v.getWeight());
-            node_u.setProfit(node_v.getProfit());
+            node_u.setWeight(temp_node.getWeight());
+            node_u.setProfit(temp_node.getProfit());
             node_u.setRatio();//testing
             node_u.setBound(bound(node_u));
             if (node_u.getBound() > ::max_profit){
                 priority_queue.insert(priority_queue.begin(), node_u);
                 sort(priority_queue.begin(), priority_queue.end(), compareBound); //sort priority queue
-                cout << "From knapsack while IF#4: display queue\n";
-                displaySet(priority_queue);
             }
-            cout << "From knapsack while IF#1: Node u level is  " << node_u.getLevel() <<"\n";
-        } // see if node is still promising
-
+        }
     }
-
 }
 
 double bound (Item node_u){
-
+    ::branch_counter++;
     int j_index, k_index;
     int totweight;
     double result;
 
-    cout << " Bound pre-if: Node u weight is " << node_u.getWeight() << ", Max weight is " << ::max_weight << "\n";
-
     if (node_u.getWeight() >= ::max_weight){
-        cout << " Returning zero from bound IF #1 \n";
-
         return 0.0;
     }
-
-
-
     else{
         result = node_u.getProfit();
         j_index = node_u.getLevel() + 1; // j = the first unconsidered item
         totweight = node_u.getWeight();
-
-        cout << "In bound else: Result is " << result << ", J index is " << j_index <<  ", Total weight is " << totweight << "\n";
-
         while (j_index < branch_items.size() && totweight + branch_items.at(j_index).getWeight() <= ::max_weight){ // greedily grab as many items as possible
             totweight = totweight + branch_items.at(j_index).getWeight();
             result = result + branch_items.at(j_index).getProfit();
             j_index++;
-
-            cout << "In bound while: Result is " << result << ", J index is " << j_index <<  ", Total weight is " << totweight << ", branch size is " << branch_items.size() <<"\n";
-            my_pause();
-
         }
     }
     k_index = j_index;
     if (k_index < branch_items.size()){
         result += ((::max_weight - totweight) * (branch_items.at(k_index).getRatio()));
-        cout << "In last bound if for result: Result is " << result <<"\n";
-
     }
     return result;
 }
