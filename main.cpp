@@ -86,6 +86,7 @@ int max_weight = 0;
 int max_profit = 0;
 int node_counter = 0;
 int branch_counter = 0;
+int brute_counter = 0;
 
 vector<Item> items;
 vector<Item> branch_items;
@@ -142,7 +143,15 @@ void set_best();
 void knapsack3 ();
 double bound (Item node_u);
 
+//--------BRUTE FORCE ALGORITHM-----------//
+
+void brute_knapsack(int index, int profit, int weight);
+//------END BRUTE FORCE ALGORITHM-------//
+
+
+
 //end branch and bound
+void algo_one(const vector<int> &profits, const vector<int> &weights);
 void algo_two(const vector<int> &profits, const vector<int> &weights);
 void algo_three(const vector<int> &profits, const vector<int> &weights);
 
@@ -180,30 +189,34 @@ void main_menu(){
         weights.push_back(w);
     }
 
-    cout << "Please choose an algorithm:\n";
-    cout << "1) Brute Force Algorithm\n";
-    cout << "2) Backtracking Algorithm\n";
-    cout << "3) Branch and Bound Algorithm\n";
-    cout << "4) Exit\n";
-    char choice;
-    cin >> choice;
-    switch(choice)
-    {
-        case '1': cout << "Working on it\n";
-            break;
-        case '2': algo_two(profits, weights);
-            break;
-        case '3': algo_three(profits, weights);
-            break;
-        case '4': cout << "Goodbye.\n";
-            break;
-        default:
-            cout << "Incorrect choice.\n";
-            main_menu();
-    }
+//    cout << "Please choose an algorithm:\n";
+//    cout << "1) Brute Force Algorithm\n";
+//    cout << "2) Backtracking Algorithm\n";
+//    cout << "3) Branch and Bound Algorithm\n";
+//    cout << "4) Exit\n";
+//    char choice;
+//    cin >> choice;
+//    switch(choice)
+//    {
+//        case '1': cout << "Working on it\n";
+//            break;
+//        case '2': algo_two(profits, weights);
+//            break;
+//        case '3': algo_three(profits, weights);
+//            break;
+//        case '4': cout << "Goodbye.\n";
+//            break;
+//        default:
+//            cout << "Incorrect choice.\n";
+//            main_menu();
+//    }
+     algo_one(profits, weights);
+     algo_two(profits, weights);
+     algo_three(profits, weights);
 }
 
 void algo_two(const vector<int> &profits, const vector<int> &weights){
+    ::max_profit = 0;
     //push into vector of items
     pushItems(profits, weights, ::items);
     //sort nodes by non-increasing ratio
@@ -220,6 +233,9 @@ void algo_two(const vector<int> &profits, const vector<int> &weights){
     displaySet(::best_set);
     cout << ::node_counter << " nodes were visited in the state space tree using the backtrack algorithm.\n";
     cout << "\n";
+    ::include.clear();
+    ::best_set.clear();
+    ::items.clear();
 }
 
 void algo_three(const vector<int> &profits, const vector<int> &weights){
@@ -244,6 +260,8 @@ void algo_three(const vector<int> &profits, const vector<int> &weights){
     displayBranch(::visited_branch);
     cout << ::branch_counter << " nodes were visited in the state space tree using the branch and bound algorithm.\n";
     cout << "\n";
+    ::visited_branch.clear();
+    ::branch_items.clear();
 }
 
 
@@ -345,6 +363,52 @@ void erase_duplicates(vector <Item> &list){
 
 }
 
+void algo_one(const vector<int> &profits, const vector<int> &weights){
+    ::max_profit = 0;
+    //push into brute force vector
+    pushItems(profits, weights, ::brute_items);
+    //sort nodes by profit <---I know this is a dirty trick but I ran out of time and need to study!
+    sort(::brute_items.begin(), ::brute_items.end(), compareProfit);
+    //insert dummy nodes
+    Item dummy_node(0, 0);
+    ::brute_items.insert(::brute_items.begin(), dummy_node);
+    cout << "Your set of items is :\n";
+    displaySet(::brute_items);
+    //call brute force algorithm
+    brute_knapsack(0,0,0);
+
+    cout << "The final amount of profit is $" << ::max_profit << "\n";
+    cout << "The final set of items in the knapsack is : \n";
+    displaySet(::best_set);
+    cout << ::brute_counter << " nodes were visited in the state space tree using the brute force algorithm.\n";
+    cout << "\n";
+    ::include.clear();
+    ::best_set.clear();
+    ::brute_items.clear();
+}
+
+//---------BRUTE FORCE ALGORITHM----------//
+
+void brute_knapsack(int index, int profit, int weight){
+    ::brute_counter++;
+    if ((weight <= ::max_weight) && (profit >= ::max_profit)){
+        ::max_profit = profit;
+        //copy include into best_set
+        set_best();
+        unsigned int temp = index;
+        if (index >= ::brute_items.size()-1)
+            return;
+        //push index + 1 node to includes
+        include.push_back(brute_items.at(temp + 1));
+        //recursive call to knapsack
+        brute_knapsack(index + 1, profit + brute_items.at(temp + 1).getProfit(), weight + brute_items.at(temp + 1).getWeight());
+        //pop index + 1 node from includes
+        include.pop_back();
+        //recursive call to knapsack
+        brute_knapsack(index + 1, profit, weight);
+    }
+}
+
 
 //BACKTRACKING ALGORITHM-----//
 void knapsack(int index, int profit, int weight){
@@ -421,19 +485,20 @@ void knapsack3 (){
     while (priority_queue.size() != 0){
 
         //at some point refactor this into an overloaded assignment operator function
+        //creating a temp node for the body of the while statement
         int temp_profit, temp_weight, temp_level;
         double temp_bound;
         temp_profit = priority_queue.at(0).getProfit();
         temp_weight = priority_queue.at(0).getWeight();
         temp_level = priority_queue.at(0).getLevel();
         temp_bound = priority_queue.at(0).getBound();
-
         Item temp_node;
         temp_node.setProfit(temp_profit);
         temp_node.setWeight(temp_weight);
         temp_node.setLevel(temp_level);
         temp_node.setRatio();
         temp_node.setBound(temp_bound);
+
         priority_queue.erase (priority_queue.begin()); //remove (PQ, v); // remove unexpanded node with best bound
 
         if (temp_node.getBound() > ::max_profit){// see if node is still promising
@@ -496,8 +561,6 @@ void my_pause(){
     cout << "Press enter to continue...";
     cin.get();
 }
-
-
 
 
 
