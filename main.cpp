@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -148,7 +150,7 @@ double bound (Item node_u);
 void brute_knapsack(int index, int profit, int weight);
 //------END BRUTE FORCE ALGORITHM-------//
 
-
+int get_random();
 
 //end branch and bound
 void algo_one(const vector<int> &profits, const vector<int> &weights);
@@ -170,7 +172,6 @@ void main_menu(){
     vector<int> profits;
     vector<int> weights;
 
-
     cout << "How many items are there to potentially take? ";
     cin >> ::item_no;
 
@@ -188,33 +189,40 @@ void main_menu(){
         profits.push_back(p);
         weights.push_back(w);
     }
-
-//    cout << "Please choose an algorithm:\n";
-//    cout << "1) Brute Force Algorithm\n";
-//    cout << "2) Backtracking Algorithm\n";
-//    cout << "3) Branch and Bound Algorithm\n";
-//    cout << "4) Exit\n";
-//    char choice;
-//    cin >> choice;
-//    switch(choice)
-//    {
-//        case '1': cout << "Working on it\n";
-//            break;
-//        case '2': algo_two(profits, weights);
-//            break;
-//        case '3': algo_three(profits, weights);
-//            break;
-//        case '4': cout << "Goodbye.\n";
-//            break;
-//        default:
-//            cout << "Incorrect choice.\n";
-//            main_menu();
-//    }
+    //user inputted test
      algo_one(profits, weights);
      algo_two(profits, weights);
      algo_three(profits, weights);
+
+     cout << "Now entering automated testing:.........................\n";
+
+     //automated test, twenty iteration with randomized arrays
+
+    ::max_weight = 16;
+
+     for (int index=4; index < 24; index++){
+         profits.clear();
+         weights.clear();
+
+         ::item_no = index;
+
+         for (int inner_index=0; inner_index < ::item_no; inner_index++){
+             int rand_p = (get_random() % 100)+1;
+             int rand_w = (get_random() % 16)+1;
+             profits.push_back(rand_p); //push random profit values between 1-100 into these vectors
+             weights.push_back(rand_w);//random max_weight between 1 and 16
+         }
+         cout << "Max weight is " << ::max_weight << " the Number of items is " << ::item_no << "\n";
+         algo_one(profits, weights);
+         algo_two(profits, weights);
+         algo_three(profits, weights);
+         ::max_weight++;
+     }
 }
 
+int get_random(){
+    return std::rand();
+}
 void algo_two(const vector<int> &profits, const vector<int> &weights){
     ::max_profit = 0;
     //push into vector of items
